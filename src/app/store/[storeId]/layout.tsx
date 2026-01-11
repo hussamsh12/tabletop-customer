@@ -23,7 +23,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
 
     // Must be authenticated
     if (!isDeviceAuthenticated) {
-      router.push('/setup');
+      router.push('/login');
       return;
     }
 

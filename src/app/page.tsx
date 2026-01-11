@@ -2,51 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, ChevronRight } from 'lucide-react';
+import { MapPin, ChevronRight, Store, AlertCircle } from 'lucide-react';
 import { useSession } from '@/hooks';
 import { useSessionStore } from '@/stores/session-store';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getActiveStores, api } from '@/lib/api';
 import type { StoreBrief } from '@/types';
 
-export default function HomePage() {
+export default function StoreSelectionPage() {
   const router = useRouter();
-  const { tenant, store, isInitialized, isDeviceAuthenticated, deviceInfo } = useSession();
+  const { tenant, isInitialized, isDeviceAuthenticated, deviceInfo } = useSession();
   const setStore = useSessionStore((state) => state.setStore);
 
   const [stores, setStores] = useState<StoreBrief[]>([]);
   const [isLoadingStores, setIsLoadingStores] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // Redirect to setup if not authenticated
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (isInitialized && !isDeviceAuthenticated) {
-      router.push('/setup');
+      router.push('/login');
     }
   }, [isInitialized, isDeviceAuthenticated, router]);
 
-  // Redirect to menu if store is already selected or device is bound to a store
-  useEffect(() => {
-    if (!isInitialized || !isDeviceAuthenticated) return;
-
-    // Device is bound to a specific store
-    if (deviceInfo?.storeId) {
-      router.push(`/store/${deviceInfo.storeId}/menu`);
-      return;
-    }
-
-    // Store is already selected
-    if (store) {
-      router.push(`/store/${store.id}/menu`);
-    }
-  }, [isInitialized, isDeviceAuthenticated, deviceInfo, store, router]);
-
   // Fetch stores when authenticated
   useEffect(() => {
-    if (!isInitialized || !isDeviceAuthenticated) return;
-    if (store || deviceInfo?.storeId) return; // Will redirect
+    if (!isInitialized || !isDeviceAuthenticated || hasFetched) return;
 
     const fetchStores = async () => {
       setIsLoadingStores(true);
@@ -59,21 +43,23 @@ export default function HomePage() {
 
         const data = await getActiveStores();
         setStores(data);
+        setHasFetched(true);
 
-        // If only one store, auto-select it
+        // If only one store, auto-select and navigate
         if (data.length === 1) {
           handleSelectStore(data[0]);
         }
       } catch (err) {
         console.error('Failed to fetch stores:', err);
         setError('Failed to load stores. Please try again.');
+        setHasFetched(true);
       } finally {
         setIsLoadingStores(false);
       }
     };
 
     fetchStores();
-  }, [isInitialized, isDeviceAuthenticated, store, deviceInfo]);
+  }, [isInitialized, isDeviceAuthenticated, deviceInfo, hasFetched]);
 
   const handleSelectStore = (storeData: StoreBrief) => {
     setStore(storeData);
@@ -93,25 +79,13 @@ export default function HomePage() {
     );
   }
 
-  // Not authenticated - will redirect to setup
+  // Not authenticated - will redirect to login
   if (!isDeviceAuthenticated) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="mt-4 text-muted-foreground">Redirecting to setup...</p>
-        </div>
-      </main>
-    );
-  }
-
-  // Redirect in progress
-  if (store || deviceInfo?.storeId) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading menu...</p>
+          <p className="mt-4 text-muted-foreground">Redirecting to login...</p>
         </div>
       </main>
     );
@@ -168,18 +142,35 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 className="mt-4"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  setHasFetched(false);
+                  setError(null);
+                }}
               >
                 Try Again
               </Button>
             </CardContent>
           </Card>
         ) : stores.length === 0 ? (
+          // No stores available
           <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">
-                No stores available at the moment.
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto mb-4 w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                <Store className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">No Stores Available</h2>
+              <p className="text-muted-foreground mb-6">
+                There are no active stores configured for this account yet.
               </p>
+              <div className="bg-muted/50 rounded-lg p-4 text-left">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="text-sm text-muted-foreground">
+                    <p className="font-medium text-foreground mb-1">What to do next:</p>
+                    <p>Please use the Manager App to create and configure your stores before using this kiosk.</p>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (
