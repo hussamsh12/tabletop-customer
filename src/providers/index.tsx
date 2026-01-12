@@ -2,6 +2,7 @@
 
 import { SessionProvider } from './session-provider';
 import { BrandingProvider } from './branding-provider';
+import { TranslationProvider } from './translation-provider';
 import { Toaster } from '@/components/ui/sonner';
 
 interface ProvidersProps {
@@ -13,8 +14,10 @@ export function Providers({ children, tenantSlug }: ProvidersProps) {
   return (
     <SessionProvider tenantSlug={tenantSlug}>
       <BrandingProvider>
-        {children}
-        <Toaster position="top-center" richColors />
+        <TranslationProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </TranslationProvider>
       </BrandingProvider>
     </SessionProvider>
   );
@@ -22,3 +25,4 @@ export function Providers({ children, tenantSlug }: ProvidersProps) {
 
 export { SessionProvider } from './session-provider';
 export { BrandingProvider } from './branding-provider';
+export { TranslationProvider } from './translation-provider';

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { useCart, useIsKioskMode, useSession } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
+import { useTranslation } from '@/stores/translation-store';
 import { formatCurrency } from '@/lib/utils';
 
 export function CartSidebar() {
@@ -22,6 +23,7 @@ export function CartSidebar() {
   const isCartOpen = useUIStore((state) => state.isCartOpen);
   const closeCart = useUIStore((state) => state.closeCart);
   const isKiosk = useIsKioskMode();
+  const { t } = useTranslation();
 
   const {
     items,
@@ -43,10 +45,10 @@ export function CartSidebar() {
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
-            Your Order
+            {t('ui.cart.title', 'Your Cart')}
             {itemCount > 0 && (
               <span className="text-muted-foreground font-normal">
-                ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+                ({itemCount} {itemCount === 1 ? t('cart.item', 'item') : t('cart.items', 'items')})
               </span>
             )}
           </SheetTitle>
@@ -55,12 +57,12 @@ export function CartSidebar() {
         {isEmpty ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
             <ShoppingBag className="h-16 w-16 text-muted-foreground/50 mb-4" />
-            <p className="text-lg font-medium">Your cart is empty</p>
+            <p className="text-lg font-medium">{t('cart.empty', 'Your cart is empty')}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Add items from the menu to get started
+              {t('cart.empty_description', 'Add items from the menu to get started')}
             </p>
             <Button className="mt-6" onClick={closeCart}>
-              Browse Menu
+              {t('ui.menu.title', 'Menu')}
             </Button>
           </div>
         ) : (
@@ -133,16 +135,16 @@ export function CartSidebar() {
             <div className="space-y-4 pt-4 border-t">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t('cart.subtotal', 'Subtotal')}</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
+                  <span className="text-muted-foreground">{t('cart.tax', 'Tax')}</span>
                   <span>{formatCurrency(taxAmount)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-semibold text-lg">
-                  <span>Total</span>
+                  <span>{t('cart.total', 'Total')}</span>
                   <span>{formatCurrency(total)}</span>
                 </div>
               </div>
@@ -156,7 +158,7 @@ export function CartSidebar() {
                     router.push(`/store/${store?.id}/checkout`);
                   }}
                 >
-                  Proceed to Checkout
+                  {t('button.checkout', 'Checkout')}
                 </Button>
                 <Button
                   variant="outline"
@@ -164,7 +166,7 @@ export function CartSidebar() {
                   className="w-full"
                   onClick={closeCart}
                 >
-                  Continue Shopping
+                  {t('button.continue', 'Continue')}
                 </Button>
               </SheetFooter>
             </div>

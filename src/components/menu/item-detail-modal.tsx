@@ -17,6 +17,7 @@ import { VariantSelector } from './variant-selector';
 import { ModifierGroupSelector } from './modifier-group';
 import { QuantitySelector } from './quantity-selector';
 import { useIsKioskMode, useAddToCart } from '@/hooks';
+import { useTranslation, useCatalogTranslation } from '@/stores/translation-store';
 import { toast } from 'sonner';
 import type { MenuItem, ItemVariant, Modifier, CartItemModifier } from '@/types';
 
@@ -30,6 +31,8 @@ interface ItemDetailModalProps {
 export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailModalProps) {
   const isKiosk = useIsKioskMode();
   const addToCart = useAddToCart();
+  const { t } = useTranslation();
+  const { ct } = useCatalogTranslation();
 
   // Local state
   const [selectedVariant, setSelectedVariant] = useState<ItemVariant | null>(null);
@@ -176,7 +179,7 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
       storeId
     );
 
-    toast.success(`Added ${quantity}x ${item.name} to cart`);
+    toast.success(t('message.added_to_cart', 'Added to cart'));
     onClose();
   };
 
@@ -196,20 +199,20 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
           {item.galleryImages && item.galleryImages.length > 0 ? (
             <img
               src={item.galleryImages[0]}
-              alt={item.name}
+              alt={ct(item.translations, 'name', item.name)}
               className="w-full h-48 object-cover"
             />
           ) : (
             <div className="w-full h-48 bg-muted flex items-center justify-center">
               <span className="text-6xl text-muted-foreground/30">
-                {item.name.charAt(0)}
+                {ct(item.translations, 'name', item.name).charAt(0)}
               </span>
             </div>
           )}
           <Button
             variant="secondary"
             size="icon"
-            className="absolute top-2 right-2 rounded-full"
+            className="absolute top-2 end-2 rounded-full"
             onClick={onClose}
           >
             <X className="h-4 w-4" />
@@ -219,11 +222,11 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
         {/* Title and description */}
         <DialogHeader className="px-6 pt-4 pb-2">
           <DialogTitle className={cn(isKiosk ? 'text-2xl' : 'text-xl')}>
-            {item.name}
+            {ct(item.translations, 'name', item.name)}
           </DialogTitle>
           {item.description && (
             <p className="text-muted-foreground text-sm mt-1">
-              {item.description}
+              {ct(item.translations, 'description', item.description)}
             </p>
           )}
           <p className={cn(
@@ -231,7 +234,7 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
             isKiosk ? 'text-xl' : 'text-lg'
           )}>
             {item.variants.length > 0
-              ? `From ${formatCurrency(item.basePrice)}`
+              ? `${t('item.from_price', 'From')} ${formatCurrency(item.basePrice)}`
               : formatCurrency(item.basePrice)}
           </p>
         </DialogHeader>
@@ -273,10 +276,10 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
                 'font-semibold',
                 isKiosk ? 'text-lg' : 'text-base'
               )}>
-                Special Instructions
+                {t('item.special_instructions', 'Special Instructions')}
               </label>
               <Input
-                placeholder="Add a note (allergies, preferences, etc.)"
+                placeholder={t('item.special_instructions_placeholder', 'Add a note (allergies, preferences, etc.)')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={500}
@@ -289,7 +292,7 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
         {/* Footer with quantity and add button */}
         <div className="border-t p-4 space-y-4 bg-background">
           <div className="flex items-center justify-between">
-            <span className="font-medium">Quantity</span>
+            <span className="font-medium">{t('item.quantity', 'Quantity')}</span>
             <QuantitySelector
               quantity={quantity}
               onChange={setQuantity}
@@ -304,7 +307,7 @@ export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailMo
             disabled={!isValid}
             onClick={handleAddToCart}
           >
-            Add to Cart - {formatCurrency(totalPrice)}
+            {t('button.add_to_cart', 'Add to Cart')} - {formatCurrency(totalPrice)}
           </Button>
         </div>
       </DialogContent>

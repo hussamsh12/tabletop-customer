@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import { ModifierChips } from './modifier-chips';
 import { ModifierSegmented } from './modifier-segmented';
 import { ModifierCards } from './modifier-cards';
@@ -53,27 +54,30 @@ function ModifierRadioCheckbox({
   onToggle,
 }: ModifierGroupSelectorProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
   const selectedCount = group.modifiers.filter(m => selectedModifierIds.has(m.id)).length;
 
   const isRequired = group.minSelections > 0;
   const isValid = !isRequired || selectedCount >= group.minSelections;
   const canSelectMore = selectedCount < group.maxSelections;
   const isRadio = group.maxSelections === 1;
+  const groupName = ct(group.translations, 'name', group.name);
 
   let requirementLabel = '';
   if (isRequired) {
     requirementLabel = group.minSelections === group.maxSelections
-      ? `Select ${group.minSelections}`
-      : `Select ${group.minSelections}-${group.maxSelections}`;
+      ? `${t('item.select', 'Select')} ${group.minSelections}`
+      : `${t('item.select', 'Select')} ${group.minSelections}-${group.maxSelections}`;
   } else {
-    requirementLabel = group.maxSelections === 1 ? 'Optional' : `Select up to ${group.maxSelections}`;
+    requirementLabel = group.maxSelections === 1 ? t('item.optional', 'Optional') : `${t('item.select_up_to', 'Select up to')} ${group.maxSelections}`;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          {group.name}
+          {groupName}
         </h4>
         <Badge variant={isValid ? 'secondary' : 'destructive'} className="text-xs">
           {requirementLabel}
@@ -86,6 +90,7 @@ function ModifierRadioCheckbox({
           // For radio behavior, always allow switching between options
           // For checkbox, disable unselected options when max is reached
           const isDisabled = !modifier.isAvailable || (!isRadio && !isSelected && !canSelectMore);
+          const modifierName = ct(modifier.translations, 'name', modifier.name);
 
           return (
             <button
@@ -118,10 +123,10 @@ function ModifierRadioCheckbox({
                   )
                 )}
                 <span className={cn('font-medium', isKiosk && 'text-lg')}>
-                  {modifier.name}
+                  {modifierName}
                 </span>
                 {!modifier.isAvailable && (
-                  <span className="text-xs text-muted-foreground">(Unavailable)</span>
+                  <span className="text-xs text-muted-foreground">({t('item.unavailable', 'Unavailable')})</span>
                 )}
               </div>
 

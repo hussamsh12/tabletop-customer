@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { MenuItemBrief } from '@/types';
 
 interface ItemCardProps {
@@ -16,20 +17,26 @@ interface ItemCardProps {
 
 export function ItemCard({ item, onSelect }: ItemCardProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
   const hasVariants = item.variantCount > 0;
   const hasModifiers = item.modifierGroupCount > 0;
   const needsCustomization = hasVariants || hasModifiers;
 
+  // Get translated name and description
+  const itemName = ct(item.translations, 'name', item.name);
+  const itemDescription = ct(item.translations, 'description', item.description || '');
+
   // Calculate price display
   const priceDisplay = hasVariants
-    ? `From ${formatCurrency(item.basePrice)}`
+    ? `${t('item.from', 'From')} ${formatCurrency(item.basePrice)}`
     : formatCurrency(item.basePrice);
 
   return (
     <Card
       role="button"
       tabIndex={item.isAvailable ? 0 : -1}
-      aria-label={`${item.name}, ${priceDisplay}${!item.isAvailable ? ', unavailable' : ''}`}
+      aria-label={`${itemName}, ${priceDisplay}${!item.isAvailable ? ', unavailable' : ''}`}
       aria-disabled={!item.isAvailable}
       className={cn(
         'group cursor-pointer overflow-hidden transition-all hover:shadow-md',
@@ -52,13 +59,13 @@ export function ItemCard({ item, onSelect }: ItemCardProps) {
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
-            alt={item.name}
+            alt={itemName}
             className="w-full h-full object-cover transition-transform group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-4xl text-muted-foreground/30">
-              {item.name.charAt(0)}
+              {itemName.charAt(0)}
             </span>
           </div>
         )}
@@ -66,7 +73,7 @@ export function ItemCard({ item, onSelect }: ItemCardProps) {
         {/* Unavailable overlay */}
         {!item.isAvailable && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-            <Badge variant="secondary">Unavailable</Badge>
+            <Badge variant="secondary">{t('item.unavailable', 'Unavailable')}</Badge>
           </div>
         )}
 
@@ -74,9 +81,9 @@ export function ItemCard({ item, onSelect }: ItemCardProps) {
         {item.isAvailable && !needsCustomization && (
           <Button
             size="icon"
-            aria-label={`Add ${item.name} to cart`}
+            aria-label={`${t('cart.add_to_cart', 'Add')} ${itemName}`}
             className={cn(
-              'absolute bottom-2 right-2 rounded-full shadow-lg',
+              'absolute bottom-2 end-2 rounded-full shadow-lg',
               'opacity-0 group-hover:opacity-100 transition-opacity',
               isKiosk && 'opacity-100' // Always visible on kiosk
             )}
@@ -96,15 +103,15 @@ export function ItemCard({ item, onSelect }: ItemCardProps) {
           'font-semibold line-clamp-2',
           isKiosk ? 'text-lg' : 'text-base'
         )}>
-          {item.name}
+          {itemName}
         </h3>
 
-        {item.description && (
+        {itemDescription && (
           <p className={cn(
             'text-muted-foreground line-clamp-2 mt-1',
             isKiosk ? 'text-sm' : 'text-xs'
           )}>
-            {item.description}
+            {itemDescription}
           </p>
         )}
 
@@ -118,7 +125,7 @@ export function ItemCard({ item, onSelect }: ItemCardProps) {
 
           {needsCustomization && item.isAvailable && (
             <Badge variant="outline" className="text-xs">
-              Customize
+              {t('item.customize', 'Customize')}
             </Badge>
           )}
         </div>

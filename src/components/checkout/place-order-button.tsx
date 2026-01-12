@@ -10,6 +10,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { useSessionStore } from '@/stores/session-store';
 import { useUIStore } from '@/stores/ui-store';
 import { useIsKioskMode } from '@/hooks';
+import { useTranslation } from '@/stores/translation-store';
 import { createOrder } from '@/lib/api';
 import { toast } from 'sonner';
 import type { CreateOrderRequest, OrderItemRequest } from '@/types';
@@ -22,6 +23,7 @@ interface PlaceOrderButtonProps {
 export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
   const router = useRouter();
   const isKiosk = useIsKioskMode();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const items = useCartStore((state) => state.items);
@@ -33,7 +35,7 @@ export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
 
   const handlePlaceOrder = async () => {
     if (!selectedStoreId || items.length === 0) {
-      toast.error('Unable to place order. Please try again.');
+      toast.error(t('error.order_failed', 'Unable to place order. Please try again.'));
       return;
     }
 
@@ -64,13 +66,13 @@ export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
       clearCart();
 
       // Show success
-      toast.success('Order placed successfully!');
+      toast.success(t('message.order_placed', 'Order placed successfully!'));
 
       // Navigate to confirmation
       router.push(`/store/${selectedStoreId}/order/${order.id}`);
     } catch (error) {
       console.error('Failed to place order:', error);
-      toast.error('Failed to place order. Please try again.');
+      toast.error(t('error.order_failed', 'Failed to place order. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -88,11 +90,11 @@ export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
     >
       {isSubmitting ? (
         <>
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Placing Order...
+          <Loader2 className="me-2 h-5 w-5 animate-spin" />
+          {t('checkout.processing', 'Processing your order...')}
         </>
       ) : (
-        `Place Order - ${formatCurrency(total)}`
+        `${t('button.place_order', 'Place Order')} - ${formatCurrency(total)}`
       )}
     </Button>
   );

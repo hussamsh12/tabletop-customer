@@ -4,10 +4,12 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart-store';
 import { useIsKioskMode } from '@/hooks';
+import { useTranslation } from '@/stores/translation-store';
 import { Separator } from '@/components/ui/separator';
 
 export function OrderSummary() {
   const isKiosk = useIsKioskMode();
+  const { t } = useTranslation();
   const items = useCartStore((state) => state.items);
   const subtotal = useCartStore((state) => state.subtotal);
   const taxAmount = useCartStore((state) => state.taxAmount);
@@ -19,7 +21,7 @@ export function OrderSummary() {
         'font-semibold',
         isKiosk ? 'text-xl' : 'text-lg'
       )}>
-        Order Summary
+        {t('checkout.order_summary', 'Order Summary')}
       </h3>
 
       {/* Item list */}
@@ -74,11 +76,11 @@ export function OrderSummary() {
       {/* Totals */}
       <div className="space-y-2">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-muted-foreground">{t('cart.subtotal', 'Subtotal')}</span>
           <span>{formatCurrency(subtotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Tax</span>
+          <span className="text-muted-foreground">{t('cart.tax', 'Tax')}</span>
           <span>{formatCurrency(taxAmount)}</span>
         </div>
         <Separator />
@@ -86,7 +88,7 @@ export function OrderSummary() {
           'flex justify-between font-bold',
           isKiosk ? 'text-xl' : 'text-lg'
         )}>
-          <span>Total</span>
+          <span>{t('cart.total', 'Total')}</span>
           <span>{formatCurrency(total)}</span>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { Category } from '@/types';
 
 interface CategorySidebarProps {
@@ -14,15 +15,19 @@ export function CategorySidebar({
   selectedCategoryId,
   onSelectCategory,
 }: CategorySidebarProps) {
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
+
   return (
     <aside className="w-48 lg:w-56 bg-background border-r flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b">
-        <h2 className="font-semibold text-lg">Menu</h2>
+        <h2 className="font-semibold text-lg">{t('ui.menu.title', 'Menu')}</h2>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
         {categories.map((category) => {
           const isSelected = category.id === selectedCategoryId;
+          const categoryName = ct(category.translations, 'name', category.name);
 
           return (
             <button
@@ -46,13 +51,13 @@ export function CategorySidebar({
                 {category.imageUrl ? (
                   <img
                     src={category.imageUrl}
-                    alt={category.name}
+                    alt={categoryName}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
                     <span className="text-2xl font-bold text-muted-foreground">
-                      {category.name.charAt(0)}
+                      {categoryName.charAt(0)}
                     </span>
                   </div>
                 )}
@@ -65,7 +70,7 @@ export function CategorySidebar({
                   isSelected ? 'text-primary' : 'text-foreground'
                 )}
               >
-                {category.name}
+                {categoryName}
               </span>
             </button>
           );

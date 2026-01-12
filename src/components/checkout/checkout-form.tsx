@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useIsKioskMode } from '@/hooks';
+import { useTranslation } from '@/stores/translation-store';
 
 interface CheckoutFormProps {
   notes: string;
@@ -12,6 +13,7 @@ interface CheckoutFormProps {
 
 export function CheckoutForm({ notes, onNotesChange }: CheckoutFormProps) {
   const isKiosk = useIsKioskMode();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
@@ -19,7 +21,7 @@ export function CheckoutForm({ notes, onNotesChange }: CheckoutFormProps) {
         'font-semibold',
         isKiosk ? 'text-xl' : 'text-lg'
       )}>
-        Order Details
+        {t('checkout.order_notes', 'Order Notes')}
       </h3>
 
       <div className="space-y-2">
@@ -27,11 +29,11 @@ export function CheckoutForm({ notes, onNotesChange }: CheckoutFormProps) {
           htmlFor="order-notes"
           className={isKiosk ? 'text-base' : 'text-sm'}
         >
-          Special Instructions (Optional)
+          {t('item.special_instructions', 'Special Instructions')} ({t('item.optional', 'Optional')})
         </Label>
         <Textarea
           id="order-notes"
-          placeholder="Add any special instructions for your order..."
+          placeholder={t('checkout.order_notes_placeholder', 'Any special requests for your order?')}
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           maxLength={500}
@@ -41,7 +43,7 @@ export function CheckoutForm({ notes, onNotesChange }: CheckoutFormProps) {
             isKiosk && 'text-base min-h-[100px]'
           )}
         />
-        <p className="text-xs text-muted-foreground text-right">
+        <p className="text-xs text-muted-foreground text-end">
           {notes.length}/500
         </p>
       </div>

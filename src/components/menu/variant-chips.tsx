@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { ItemVariant } from '@/types';
 
 interface VariantChipsProps {
@@ -19,6 +20,8 @@ export function VariantChips({
   basePrice,
 }: VariantChipsProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
 
   if (variants.length === 0) return null;
 
@@ -26,15 +29,15 @@ export function VariantChips({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          Size
+          {t('item.size', 'Size')}
         </h4>
-        <span className="text-sm text-muted-foreground">Required</span>
+        <span className="text-sm text-muted-foreground">{t('item.required', 'Required')}</span>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {variants.map((variant) => {
           const isSelected = selectedVariantId === variant.id;
-          const totalPrice = basePrice + variant.priceAdjustment;
+          const variantName = ct(variant.translations, 'name', variant.name);
 
           return (
             <button
@@ -51,9 +54,9 @@ export function VariantChips({
               )}
               onClick={() => variant.isAvailable && onSelect(variant)}
             >
-              {variant.name}
+              {variantName}
               {variant.priceAdjustment !== 0 && (
-                <span className="ml-1 opacity-80 text-sm">
+                <span className="ms-1 opacity-80 text-sm">
                   {variant.priceAdjustment > 0 ? '+' : ''}{formatCurrency(variant.priceAdjustment)}
                 </span>
               )}

@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { ItemVariant } from '@/types';
 
 interface VariantCardsProps {
@@ -20,6 +21,8 @@ export function VariantCards({
   basePrice,
 }: VariantCardsProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
 
   if (variants.length === 0) return null;
 
@@ -27,9 +30,9 @@ export function VariantCards({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          Size
+          {t('item.size', 'Size')}
         </h4>
-        <span className="text-sm text-muted-foreground">Required</span>
+        <span className="text-sm text-muted-foreground">{t('item.required', 'Required')}</span>
       </div>
 
       <div className={cn(
@@ -40,6 +43,7 @@ export function VariantCards({
           const isSelected = selectedVariantId === variant.id;
           const isDisabled = !variant.isAvailable;
           const totalPrice = basePrice + variant.priceAdjustment;
+          const variantName = ct(variant.translations, 'name', variant.name);
 
           return (
             <button
@@ -67,12 +71,12 @@ export function VariantCards({
                 )
               )}>
                 <span className="text-xs font-bold text-muted-foreground">
-                  {variant.name.charAt(0)}
+                  {variantName.charAt(0)}
                 </span>
               </div>
 
               <span className={cn('font-medium', isKiosk && 'text-lg')}>
-                {variant.name}
+                {variantName}
               </span>
 
               <span className="text-sm text-muted-foreground">
@@ -81,7 +85,7 @@ export function VariantCards({
 
               {/* Selection indicator */}
               {isSelected && (
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <div className="absolute top-2 end-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                   <Check className="w-3 h-3 text-primary-foreground" />
                 </div>
               )}

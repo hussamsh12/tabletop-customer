@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckoutForm, OrderSummary, PlaceOrderButton } from '@/components/checkout';
 import { useSession, useIsKioskMode } from '@/hooks';
 import { useCartStore } from '@/stores/cart-store';
+import { useTranslation } from '@/stores/translation-store';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
   const isKiosk = useIsKioskMode();
   const items = useCartStore((state) => state.items);
   const [orderNotes, setOrderNotes] = useState('');
+  const { t } = useTranslation();
 
   // Redirect to menu if cart is empty
   if (isInitialized && items.length === 0) {
@@ -29,16 +31,16 @@ export default function CheckoutPage() {
               'font-semibold',
               isKiosk ? 'text-2xl' : 'text-xl'
             )}>
-              Your cart is empty
+              {t('cart.empty', 'Your cart is empty')}
             </h2>
             <p className="text-muted-foreground">
-              Add some items to your cart before checking out.
+              {t('cart.empty_description', 'Add items from the menu to get started')}
             </p>
             <Button
               size={isKiosk ? 'lg' : 'default'}
               onClick={() => router.push(`/store/${store?.id}/menu`)}
             >
-              Browse Menu
+              {t('ui.menu.title', 'Menu')}
             </Button>
           </CardContent>
         </Card>
@@ -63,7 +65,7 @@ export default function CheckoutPage() {
             'font-semibold',
             isKiosk ? 'text-2xl' : 'text-xl'
           )}>
-            Checkout
+            {t('ui.checkout.title', 'Checkout')}
           </h1>
         </div>
       </div>

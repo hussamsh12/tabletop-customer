@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { ModifierGroup, Modifier } from '@/types';
 
 interface ModifierChipsProps {
@@ -18,27 +19,30 @@ export function ModifierChips({
   onToggle,
 }: ModifierChipsProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
   const selectedCount = group.modifiers.filter(m => selectedModifierIds.has(m.id)).length;
 
   const isRequired = group.minSelections > 0;
   const isValid = !isRequired || selectedCount >= group.minSelections;
   const canSelectMore = selectedCount < group.maxSelections;
   const isRadio = group.maxSelections === 1;
+  const groupName = ct(group.translations, 'name', group.name);
 
   let requirementLabel = '';
   if (isRequired) {
     requirementLabel = group.minSelections === group.maxSelections
-      ? `Select ${group.minSelections}`
-      : `Select ${group.minSelections}-${group.maxSelections}`;
+      ? `${t('item.select', 'Select')} ${group.minSelections}`
+      : `${t('item.select', 'Select')} ${group.minSelections}-${group.maxSelections}`;
   } else {
-    requirementLabel = group.maxSelections === 1 ? 'Optional' : `Up to ${group.maxSelections}`;
+    requirementLabel = group.maxSelections === 1 ? t('item.optional', 'Optional') : `${t('item.up_to', 'Up to')} ${group.maxSelections}`;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          {group.name}
+          {groupName}
         </h4>
         <Badge variant={isValid ? 'secondary' : 'destructive'} className="text-xs">
           {requirementLabel}
@@ -49,6 +53,7 @@ export function ModifierChips({
         {group.modifiers.map((modifier) => {
           const isSelected = selectedModifierIds.has(modifier.id);
           const isDisabled = !modifier.isAvailable || (!isRadio && !isSelected && !canSelectMore);
+          const modifierName = ct(modifier.translations, 'name', modifier.name);
 
           return (
             <button
@@ -65,9 +70,9 @@ export function ModifierChips({
               )}
               onClick={() => !isDisabled && onToggle(modifier)}
             >
-              {modifier.name}
+              {modifierName}
               {modifier.price > 0 && (
-                <span className="ml-1 opacity-80">
+                <span className="ms-1 opacity-80">
                   +{formatCurrency(modifier.price)}
                 </span>
               )}

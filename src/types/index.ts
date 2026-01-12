@@ -5,6 +5,11 @@ export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'COM
 export type ModifierDisplayType = 'AUTO' | 'CHIPS' | 'SEGMENTED' | 'RADIO' | 'CHECKBOX' | 'CARDS';
 export type VariantDisplayType = 'AUTO' | 'CHIPS' | 'SEGMENTED' | 'RADIO' | 'CARDS';
 
+// ===== Translations =====
+
+// Structure: { "name": { "he": "Hebrew name", "ar": "Arabic name" }, "description": { "he": "..." } }
+export type CatalogTranslations = Record<string, Record<string, string>>;
+
 // ===== Tenant & Store =====
 
 export interface Tenant {
@@ -53,6 +58,7 @@ export interface Category {
   description?: string;
   imageUrl?: string;
   displayOrder: number;
+  translations?: CatalogTranslations;
   items: MenuItemBrief[];
 }
 
@@ -67,6 +73,7 @@ export interface MenuItemBrief {
   displayOrder: number;
   variantCount: number;
   modifierGroupCount: number;
+  translations?: CatalogTranslations;
 }
 
 // Full item details with variants and modifiers
@@ -79,6 +86,7 @@ export interface MenuItem {
   isAvailable: boolean;
   displayOrder: number;
   variantDisplayType: VariantDisplayType;
+  translations?: CatalogTranslations;
   variants: ItemVariant[];
   modifierGroups: ModifierGroup[];
 }
@@ -88,6 +96,7 @@ export interface ItemVariant {
   name: string;
   priceAdjustment: number;
   isAvailable: boolean;
+  translations?: CatalogTranslations;
 }
 
 export interface ModifierGroup {
@@ -96,6 +105,7 @@ export interface ModifierGroup {
   minSelections: number;
   maxSelections: number;
   displayType: ModifierDisplayType;
+  translations?: CatalogTranslations;
   modifiers: Modifier[];
 }
 
@@ -104,6 +114,7 @@ export interface Modifier {
   name: string;
   price: number;
   isAvailable: boolean;
+  translations?: CatalogTranslations;
 }
 
 // ===== Cart =====

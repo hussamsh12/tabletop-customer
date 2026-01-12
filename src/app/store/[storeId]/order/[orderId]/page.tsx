@@ -11,16 +11,17 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession, useIsKioskMode } from '@/hooks';
+import { useTranslation } from '@/stores/translation-store';
 import { getOrder } from '@/lib/api';
 import type { OrderResponse, OrderStatus } from '@/types';
 
-const statusConfig: Record<OrderStatus, { label: string; icon: React.ElementType; color: string }> = {
-  PENDING: { label: 'Order Received', icon: Clock, color: 'bg-yellow-500' },
-  CONFIRMED: { label: 'Confirmed', icon: CheckCircle, color: 'bg-blue-500' },
-  PREPARING: { label: 'Preparing', icon: ChefHat, color: 'bg-orange-500' },
-  READY: { label: 'Ready for Pickup', icon: Package, color: 'bg-green-500' },
-  COMPLETED: { label: 'Completed', icon: CheckCircle, color: 'bg-gray-500' },
-  CANCELLED: { label: 'Cancelled', icon: XCircle, color: 'bg-red-500' },
+const statusConfig: Record<OrderStatus, { labelKey: string; fallback: string; icon: React.ElementType; color: string }> = {
+  PENDING: { labelKey: 'order.status.pending', fallback: 'Pending', icon: Clock, color: 'bg-yellow-500' },
+  CONFIRMED: { labelKey: 'order.status.confirmed', fallback: 'Confirmed', icon: CheckCircle, color: 'bg-blue-500' },
+  PREPARING: { labelKey: 'order.status.preparing', fallback: 'Preparing', icon: ChefHat, color: 'bg-orange-500' },
+  READY: { labelKey: 'order.status.ready', fallback: 'Ready', icon: Package, color: 'bg-green-500' },
+  COMPLETED: { labelKey: 'order.status.completed', fallback: 'Completed', icon: CheckCircle, color: 'bg-gray-500' },
+  CANCELLED: { labelKey: 'order.status.cancelled', fallback: 'Cancelled', icon: XCircle, color: 'bg-red-500' },
 };
 
 export default function OrderConfirmationPage() {
@@ -28,6 +29,7 @@ export default function OrderConfirmationPage() {
   const router = useRouter();
   const { store } = useSession();
   const isKiosk = useIsKioskMode();
+  const { t } = useTranslation();
 
   const orderId = params.orderId as string;
 
@@ -47,7 +49,7 @@ export default function OrderConfirmationPage() {
         setOrder(data);
       } catch (err) {
         console.error('Failed to fetch order:', err);
-        setError('Failed to load order details.');
+        setError(t('error.generic', 'Failed to load order details.'));
       } finally {
         setIsLoading(false);
       }
@@ -92,7 +94,7 @@ export default function OrderConfirmationPage() {
               variant="outline"
               onClick={() => window.location.reload()}
             >
-              Try Again
+              {t('button.try_again', 'Try Again')}
             </Button>
           </CardContent>
         </Card>
@@ -125,16 +127,16 @@ export default function OrderConfirmationPage() {
                 'font-bold',
                 isKiosk ? 'text-3xl' : 'text-2xl'
               )}>
-                Thank You!
+                {t('order.thank_you', 'Thank you for your order!')}
               </h1>
               <p className="text-muted-foreground">
-                Your order has been placed successfully.
+                {t('order.preparing_message', 'Your order is being prepared')}
               </p>
             </div>
 
             {/* Order number */}
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Order Number</p>
+              <p className="text-sm text-muted-foreground">{t('order.number', 'Order Number')}</p>
               <p className={cn(
                 'font-mono font-bold tracking-wider',
                 isKiosk ? 'text-5xl' : 'text-4xl'
@@ -152,7 +154,7 @@ export default function OrderConfirmationPage() {
                 isKiosk ? 'text-lg' : 'text-base'
               )}
             >
-              {status.label}
+              {t(status.labelKey, status.fallback)}
             </Badge>
           </CardContent>
         </Card>
@@ -164,12 +166,12 @@ export default function OrderConfirmationPage() {
               'font-semibold',
               isKiosk ? 'text-xl' : 'text-lg'
             )}>
-              Order Details
+              {t('checkout.order_summary', 'Order Summary')}
             </h2>
 
             {/* Store */}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Store</span>
+              <span className="text-muted-foreground">{t('store.label', 'Store')}</span>
               <span className="font-medium">{order.storeName}</span>
             </div>
 
@@ -216,11 +218,11 @@ export default function OrderConfirmationPage() {
             {/* Totals */}
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">{t('cart.subtotal', 'Subtotal')}</span>
                 <span>{formatCurrency(order.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax</span>
+                <span className="text-muted-foreground">{t('cart.tax', 'Tax')}</span>
                 <span>{formatCurrency(order.taxAmount)}</span>
               </div>
               <Separator />
@@ -228,7 +230,7 @@ export default function OrderConfirmationPage() {
                 'flex justify-between font-bold',
                 isKiosk ? 'text-xl' : 'text-lg'
               )}>
-                <span>Total</span>
+                <span>{t('cart.total', 'Total')}</span>
                 <span>{formatCurrency(order.total)}</span>
               </div>
             </div>
@@ -238,7 +240,7 @@ export default function OrderConfirmationPage() {
               <>
                 <Separator />
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Special Instructions</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('item.special_instructions', 'Special Instructions')}</p>
                   <p className="italic">{order.notes}</p>
                 </div>
               </>
@@ -255,7 +257,7 @@ export default function OrderConfirmationPage() {
           )}
           onClick={handleNewOrder}
         >
-          Start New Order
+          {t('button.new_order', 'New Order')}
         </Button>
       </div>
     </div>

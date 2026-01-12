@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { ItemVariant } from '@/types';
 
 interface VariantSegmentedProps {
@@ -19,6 +20,8 @@ export function VariantSegmented({
   basePrice,
 }: VariantSegmentedProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
 
   if (variants.length === 0) return null;
 
@@ -26,15 +29,16 @@ export function VariantSegmented({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          Size
+          {t('item.size', 'Size')}
         </h4>
-        <span className="text-sm text-muted-foreground">Required</span>
+        <span className="text-sm text-muted-foreground">{t('item.required', 'Required')}</span>
       </div>
 
       <div className="inline-flex rounded-lg border border-input bg-muted p-1">
         {variants.map((variant) => {
           const isSelected = selectedVariantId === variant.id;
           const isDisabled = !variant.isAvailable;
+          const variantName = ct(variant.translations, 'name', variant.name);
 
           return (
             <button
@@ -43,7 +47,7 @@ export function VariantSegmented({
               disabled={isDisabled}
               className={cn(
                 'px-4 py-2 font-medium transition-all touch-target whitespace-nowrap',
-                'first:rounded-l-md last:rounded-r-md',
+                'first:rounded-s-md last:rounded-e-md',
                 isSelected
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
@@ -52,9 +56,9 @@ export function VariantSegmented({
               )}
               onClick={() => !isDisabled && onSelect(variant)}
             >
-              {variant.name}
+              {variantName}
               {variant.priceAdjustment !== 0 && (
-                <span className="ml-1 text-xs opacity-70">
+                <span className="ms-1 text-xs opacity-70">
                   {variant.priceAdjustment > 0 ? '+' : ''}{formatCurrency(variant.priceAdjustment)}
                 </span>
               )}

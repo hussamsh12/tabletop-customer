@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useIsKioskMode } from '@/hooks';
+import { useCatalogTranslation, useTranslation } from '@/stores/translation-store';
 import type { ModifierGroup, Modifier } from '@/types';
 
 interface ModifierCardsProps {
@@ -19,27 +20,30 @@ export function ModifierCards({
   onToggle,
 }: ModifierCardsProps) {
   const isKiosk = useIsKioskMode();
+  const { ct } = useCatalogTranslation();
+  const { t } = useTranslation();
   const selectedCount = group.modifiers.filter(m => selectedModifierIds.has(m.id)).length;
 
   const isRequired = group.minSelections > 0;
   const isValid = !isRequired || selectedCount >= group.minSelections;
   const canSelectMore = selectedCount < group.maxSelections;
   const isRadio = group.maxSelections === 1;
+  const groupName = ct(group.translations, 'name', group.name);
 
   let requirementLabel = '';
   if (isRequired) {
     requirementLabel = group.minSelections === group.maxSelections
-      ? `Select ${group.minSelections}`
-      : `Select ${group.minSelections}-${group.maxSelections}`;
+      ? `${t('item.select', 'Select')} ${group.minSelections}`
+      : `${t('item.select', 'Select')} ${group.minSelections}-${group.maxSelections}`;
   } else {
-    requirementLabel = group.maxSelections === 1 ? 'Optional' : `Up to ${group.maxSelections}`;
+    requirementLabel = group.maxSelections === 1 ? t('item.optional', 'Optional') : `${t('item.up_to', 'Up to')} ${group.maxSelections}`;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className={cn('font-semibold', isKiosk ? 'text-lg' : 'text-base')}>
-          {group.name}
+          {groupName}
         </h4>
         <Badge variant={isValid ? 'secondary' : 'destructive'} className="text-xs">
           {requirementLabel}
@@ -53,6 +57,7 @@ export function ModifierCards({
         {group.modifiers.map((modifier) => {
           const isSelected = selectedModifierIds.has(modifier.id);
           const isDisabled = !modifier.isAvailable || (!isRadio && !isSelected && !canSelectMore);
+          const modifierName = ct(modifier.translations, 'name', modifier.name);
 
           return (
             <button
@@ -75,7 +80,7 @@ export function ModifierCards({
                 isKiosk && 'w-16 h-16'
               )}>
                 <span className="text-xl font-bold text-muted-foreground">
-                  {modifier.name.charAt(0)}
+                  {modifierName.charAt(0)}
                 </span>
               </div>
 
@@ -83,7 +88,7 @@ export function ModifierCards({
                 'font-medium text-center',
                 isKiosk && 'text-lg'
               )}>
-                {modifier.name}
+                {modifierName}
               </span>
 
               {modifier.price > 0 && (
@@ -94,7 +99,7 @@ export function ModifierCards({
 
               {/* Selection indicator */}
               {isSelected && (
-                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <div className="absolute top-2 end-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                   <Check className="w-3 h-3 text-primary-foreground" />
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
+import { useTranslation, useCatalogTranslation } from '@/stores/translation-store';
 import { getMenu, getItemDetails } from '@/lib/api';
 import { CategorySidebar, ItemGrid, ItemDetailModal } from '@/components/menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +16,8 @@ export default function MenuPage() {
   const { store, tenant, isInitialized } = useSession();
   const selectedCategoryId = useUIStore((state) => state.selectedCategoryId);
   const setSelectedCategory = useUIStore((state) => state.setSelectedCategory);
+  const { t } = useTranslation();
+  const { ct } = useCatalogTranslation();
 
   // State
   const [categories, setCategories] = useState<Category[]>([]);
@@ -40,7 +43,7 @@ export default function MenuPage() {
         }
       } catch (err) {
         console.error('Failed to fetch menu:', err);
-        setError('Failed to load menu. Please try again.');
+        setError(t('error.generic', 'Failed to load menu. Please try again.'));
       } finally {
         setIsLoading(false);
       }
@@ -125,7 +128,7 @@ export default function MenuPage() {
           <CardContent className="p-8 text-center">
             <p className="text-destructive mb-4">{error}</p>
             <Button variant="outline" onClick={() => window.location.reload()}>
-              Try Again
+              {t('button.try_again', 'Try Again')}
             </Button>
           </CardContent>
         </Card>
@@ -140,9 +143,9 @@ export default function MenuPage() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No Menu Available</h2>
+            <h2 className="text-xl font-semibold mb-2">{t('menu.no_menu', 'No Menu Available')}</h2>
             <p className="text-muted-foreground">
-              The menu for this store is not available yet.
+              {t('menu.no_menu_description', 'The menu for this store is not available yet.')}
             </p>
           </CardContent>
         </Card>
@@ -165,16 +168,16 @@ export default function MenuPage() {
         <header className="h-20 border-b bg-background px-6 flex items-center justify-between flex-shrink-0">
           <div>
             <h1 className="text-2xl font-bold">
-              {currentCategory?.name || 'Menu'}
+              {currentCategory ? ct(currentCategory.translations, 'name', currentCategory.name) : t('ui.menu.title', 'Menu')}
             </h1>
             {currentCategory?.description && (
               <p className="text-sm text-muted-foreground">
-                {currentCategory.description}
+                {ct(currentCategory.translations, 'description', currentCategory.description)}
               </p>
             )}
           </div>
           <div className="text-sm text-muted-foreground">
-            {currentItems.length} {currentItems.length === 1 ? 'item' : 'items'}
+            {currentItems.length} {currentItems.length === 1 ? t('cart.item', 'item') : t('cart.items', 'items')}
           </div>
         </header>
 
@@ -183,7 +186,7 @@ export default function MenuPage() {
           {currentItems.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">
-                No items in this category yet.
+                {t('common.no_results', 'No items in this category yet.')}
               </p>
             </div>
           ) : (

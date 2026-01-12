@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSessionStore } from '@/stores/session-store';
+import { useCartStore } from '@/stores/cart-store';
 import { authenticateDevice, api, getCurrentTenant, getActiveStores } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Monitor, MapPin, ChevronRight, ArrowLeft, Store } from 'lucide-react';
+import { LanguageSelector } from '@/components/layout/language-selector';
+import { useTranslation } from '@/stores/translation-store';
 import type { StoreBrief, DeviceAuthResponse } from '@/types';
 
 type LoginStep = 'credentials' | 'store-selection';
@@ -18,6 +21,8 @@ type LoginStep = 'credentials' | 'store-selection';
 export default function LoginPage() {
   const router = useRouter();
   const { setDeviceSession, setTenant, setStore } = useSessionStore();
+  const clearCart = useCartStore((state) => state.clearCart);
+  const { t } = useTranslation();
 
   // Form state
   const [email, setEmail] = useState('');
@@ -121,6 +126,9 @@ export default function LoginPage() {
   };
 
   const completeLogin = async (response: DeviceAuthResponse, store?: StoreBrief) => {
+    // Clear any existing cart from previous session
+    clearCart();
+
     // Set device session in store
     setDeviceSession(response.device, response.accessToken, response.refreshToken);
 
@@ -159,15 +167,20 @@ export default function LoginPage() {
   // Credentials step
   if (step === 'credentials') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4 relative">
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <Monitor className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Kiosk Setup</CardTitle>
+            <CardTitle className="text-2xl">{t('login.title', 'Kiosk Setup')}</CardTitle>
             <CardDescription>
-              Enter administrator credentials to configure this kiosk
+              {t('login.description', 'Enter administrator credentials to configure this kiosk')}
             </CardDescription>
           </CardHeader>
 
@@ -180,7 +193,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleCredentialsSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('login.email', 'Email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -194,7 +207,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('login.password', 'Password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -210,10 +223,10 @@ export default function LoginPage() {
                 {isLoading || isLoadingStores ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isLoadingStores ? 'Loading stores...' : 'Signing in...'}
+                    {isLoadingStores ? t('login.loading_stores', 'Loading stores...') : t('login.signing_in', 'Signing in...')}
                   </>
                 ) : (
-                  'Continue'
+                  t('button.continue', 'Continue')
                 )}
               </Button>
             </form>
@@ -229,23 +242,25 @@ export default function LoginPage() {
       {/* Header */}
       <div className="bg-background border-b">
         <div className="container max-w-2xl mx-auto px-4 py-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToCredentials}
-            className="mb-4"
-            disabled={isLoading}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToCredentials}
+              disabled={isLoading}
+            >
+              <ArrowLeft className="h-4 w-4 me-2" />
+              {t('button.back', 'Back')}
+            </Button>
+            <LanguageSelector />
+          </div>
           <div className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <Store className="w-6 h-6 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold">Select Store</h1>
+            <h1 className="text-2xl font-bold">{t('store.select_title', 'Select Store')}</h1>
             <p className="text-muted-foreground mt-1">
-              Choose which store this kiosk will serve
+              {t('store.select_description', 'Choose which store this kiosk will serve')}
             </p>
           </div>
         </div>
@@ -279,9 +294,9 @@ export default function LoginPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No Stores Available</h2>
+              <h2 className="text-xl font-semibold mb-2">{t('store.no_stores', 'No Stores Available')}</h2>
               <p className="text-muted-foreground">
-                Create stores in the admin dashboard before setting up kiosks.
+                {t('store.no_stores_description', 'Create stores in the admin dashboard before setting up kiosks.')}
               </p>
             </CardContent>
           </Card>
@@ -317,7 +332,7 @@ export default function LoginPage() {
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Configuring kiosk...</span>
+            <span className="ms-2 text-muted-foreground">{t('store.configuring', 'Configuring kiosk...')}</span>
           </div>
         )}
       </div>

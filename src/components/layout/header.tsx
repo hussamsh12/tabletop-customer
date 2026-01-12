@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, Store, LogOut, Settings } from 'lucide-react';
+import { LanguageSelector } from './language-selector';
+import { useTranslation } from '@/stores/translation-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,6 +30,7 @@ export function Header({ onCartClick }: HeaderProps) {
   const openCart = useUIStore((state) => state.openCart);
   const resetSession = useSessionStore((state) => state.reset);
   const clearCart = useCartStore((state) => state.clearCart);
+  const { t } = useTranslation();
 
   const handleCartClick = () => {
     if (onCartClick) {
@@ -78,8 +81,11 @@ export function Header({ onCartClick }: HeaderProps) {
           </div>
         )}
 
-        {/* Right - Settings dropdown and Cart Button */}
+        {/* Right - Language, Settings dropdown and Cart Button */}
         <div className="flex items-center gap-2">
+          {/* Language Selector */}
+          <LanguageSelector />
+
           {/* Admin Settings Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -94,8 +100,8 @@ export function Header({ onCartClick }: HeaderProps) {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout & Reconfigure
+                <LogOut className="h-4 w-4 me-2" />
+                {t('settings.logout', 'Logout & Reconfigure')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -115,7 +121,7 @@ export function Header({ onCartClick }: HeaderProps) {
                 {cartItemCount > 99 ? '99+' : cartItemCount}
               </Badge>
             )}
-            <span className="ml-2 hidden sm:inline">Cart</span>
+            <span className="ms-2 hidden sm:inline">{t('ui.cart.title', 'Cart')}</span>
           </Button>
         </div>
       </div>

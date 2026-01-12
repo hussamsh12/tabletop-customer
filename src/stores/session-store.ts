@@ -71,6 +71,8 @@ export const useSessionStore = create<SessionState>()(
           name: deviceInfo.storeName,
           code: '',  // Not available from device info
         } : null,
+        // Mark as initialized since we just logged in
+        isInitialized: true,
       }),
 
       updateTokens: (accessToken, refreshToken) => set({
