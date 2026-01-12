@@ -44,8 +44,14 @@ export function useAddToCart() {
     quantity: number,
     variant?: ItemVariant,
     modifiers: CartItemModifier[] = [],
-    notes?: string
+    notes?: string,
+    storeId?: string
   ) => {
+    if (!storeId) {
+      console.error('useAddToCart: storeId is required');
+      return;
+    }
+
     const unitPrice = item.basePrice + (variant?.priceAdjustment || 0);
 
     addItem({
@@ -57,7 +63,7 @@ export function useAddToCart() {
       unitPrice,
       notes,
       modifiers,
-    });
+    }, storeId);
   };
 }
 

@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartItem, CartItemModifier } from '@/types';
 
 interface CartState {
+  storeId: string | null;
   items: CartItem[];
   subtotal: number;
   taxRate: number;
@@ -10,7 +11,8 @@ interface CartState {
   total: number;
 
   // Actions
-  addItem: (item: Omit<CartItem, 'id' | 'totalPrice'>) => void;
+  setStore: (storeId: string) => void;
+  addItem: (item: Omit<CartItem, 'id' | 'totalPrice'>, storeId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   removeItem: (cartItemId: string) => void;
   updateNotes: (cartItemId: string, notes: string) => void;
@@ -40,17 +42,49 @@ function recalculateTotals(items: CartItem[], taxRate: number) {
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
+      storeId: null,
       items: [],
       subtotal: 0,
       taxRate: 0.17, // Default 17% tax rate
       taxAmount: 0,
       total: 0,
 
-      addItem: (itemData) => {
-        const { items, taxRate } = get();
+      setStore: (storeId) => {
+        const currentStoreId = get().storeId;
+        // If switching to a different store, clear the cart
+        if (currentStoreId && currentStoreId !== storeId) {
+          set({
+            storeId,
+            items: [],
+            subtotal: 0,
+            taxAmount: 0,
+            total: 0,
+          });
+        } else {
+          set({ storeId });
+        }
+      },
+
+      addItem: (itemData, storeId) => {
+        const { items, taxRate, storeId: currentStoreId } = get();
+
+        // If adding to a different store, clear cart first
+        if (currentStoreId && currentStoreId !== storeId) {
+          set({
+            storeId,
+            items: [],
+            subtotal: 0,
+            taxAmount: 0,
+            total: 0,
+          });
+        } else if (!currentStoreId) {
+          set({ storeId });
+        }
+
+        const currentItems = currentStoreId !== storeId ? [] : items;
 
         // Check if same item with same variant and modifiers exists
-        const existingIndex = items.findIndex(
+        const existingIndex = currentItems.findIndex(
           (existing) =>
             existing.itemId === itemData.itemId &&
             existing.variantId === itemData.variantId &&
@@ -62,7 +96,7 @@ export const useCartStore = create<CartState>()(
 
         if (existingIndex >= 0) {
           // Update quantity of existing item
-          newItems = items.map((item, index) => {
+          newItems = currentItems.map((item, index) => {
             if (index === existingIndex) {
               const newQuantity = item.quantity + itemData.quantity;
               return {
@@ -80,7 +114,7 @@ export const useCartStore = create<CartState>()(
             id: generateId(),
             totalPrice: calculateItemTotal(itemData),
           };
-          newItems = [...items, newItem];
+          newItems = [...currentItems, newItem];
         }
 
         const totals = recalculateTotals(newItems, taxRate);
@@ -144,8 +178,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'kiosk-cart',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
+        storeId: state.storeId,
         items: state.items,
         taxRate: state.taxRate,
       }),

@@ -17,6 +17,9 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
 
   const { store, isInitialized, isDeviceAuthenticated, deviceInfo } = useSession();
 
+  // Check if this is the correct store for this device
+  const isCorrectStore = deviceInfo?.storeId === storeId || store?.id === storeId;
+
   // Redirect if not authenticated or store doesn't match
   useEffect(() => {
     if (!isInitialized) return;
@@ -33,14 +36,19 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
       return;
     }
 
+    // If device is bound to this store, we're good (even if store object isn't loaded yet)
+    if (deviceInfo?.storeId === storeId) {
+      return;
+    }
+
     // If no store selected or different store, go to store selection
     if (!store || store.id !== storeId) {
       router.push('/');
     }
   }, [isInitialized, isDeviceAuthenticated, deviceInfo, store, storeId, router]);
 
-  // Loading state
-  if (!isInitialized || !store) {
+  // Loading state - but allow if device is bound to this store
+  if (!isInitialized || (!store && !isCorrectStore)) {
     return (
       <div className="min-h-screen flex flex-col">
         {/* Header skeleton */}
@@ -68,7 +76,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header showStoreSelector />
+      <Header />
       <main className="flex-1">{children}</main>
       <CartSidebar />
     </div>

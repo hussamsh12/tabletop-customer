@@ -24,9 +24,10 @@ interface ItemDetailModalProps {
   item: MenuItem | null;
   isOpen: boolean;
   onClose: () => void;
+  storeId: string;
 }
 
-export function ItemDetailModal({ item, isOpen, onClose }: ItemDetailModalProps) {
+export function ItemDetailModal({ item, isOpen, onClose, storeId }: ItemDetailModalProps) {
   const isKiosk = useIsKioskMode();
   const addToCart = useAddToCart();
 
@@ -171,7 +172,8 @@ export function ItemDetailModal({ item, isOpen, onClose }: ItemDetailModalProps)
       quantity,
       selectedVariant || undefined,
       cartModifiers,
-      notes || undefined
+      notes || undefined,
+      storeId
     );
 
     toast.success(`Added ${quantity}x ${item.name} to cart`);
@@ -187,6 +189,7 @@ export function ItemDetailModal({ item, isOpen, onClose }: ItemDetailModalProps)
           'flex flex-col max-h-[90vh] h-[90vh] p-0 overflow-hidden',
           isKiosk ? 'sm:max-w-xl' : 'sm:max-w-lg'
         )}
+        showCloseButton={false}
       >
         {/* Header with image */}
         <div className="relative">

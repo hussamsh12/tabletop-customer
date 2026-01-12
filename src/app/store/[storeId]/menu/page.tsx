@@ -197,6 +197,7 @@ export default function MenuPage() {
         item={selectedItem}
         isOpen={isItemModalOpen}
         onClose={handleCloseModal}
+        storeId={store?.id || ''}
       />
     </div>
   );

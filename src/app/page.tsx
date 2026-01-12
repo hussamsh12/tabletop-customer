@@ -28,9 +28,18 @@ export default function StoreSelectionPage() {
     }
   }, [isInitialized, isDeviceAuthenticated, router]);
 
-  // Fetch stores when authenticated
+  // Redirect to menu if device is already bound to a store
+  useEffect(() => {
+    if (isInitialized && isDeviceAuthenticated && deviceInfo?.storeId) {
+      router.push(`/store/${deviceInfo.storeId}/menu`);
+    }
+  }, [isInitialized, isDeviceAuthenticated, deviceInfo, router]);
+
+  // Fetch stores when authenticated and not bound to a store
   useEffect(() => {
     if (!isInitialized || !isDeviceAuthenticated || hasFetched) return;
+    // Skip if device is bound to a store (will redirect above)
+    if (deviceInfo?.storeId) return;
 
     const fetchStores = async () => {
       setIsLoadingStores(true);

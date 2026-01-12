@@ -9,6 +9,7 @@ interface RequestConfig {
   body?: unknown;
   headers?: Record<string, string>;
   skipAuth?: boolean;
+  authToken?: string; // Override token for immediate use after login
 }
 
 interface TokenStore {
@@ -99,7 +100,7 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
-    const { method = 'GET', body, headers = {}, skipAuth = false } = config;
+    const { method = 'GET', body, headers = {}, skipAuth = false, authToken } = config;
 
     const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -116,9 +117,9 @@ class ApiClient {
       requestHeaders['X-Employee-ID'] = this.employeeId;
     }
 
-    // Add auth token
-    if (!skipAuth && tokenStore) {
-      const accessToken = tokenStore.getAccessToken();
+    // Add auth token (priority: override > token store)
+    if (!skipAuth) {
+      const accessToken = authToken || tokenStore?.getAccessToken();
       if (accessToken) {
         requestHeaders['Authorization'] = `Bearer ${accessToken}`;
       }

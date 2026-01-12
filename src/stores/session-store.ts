@@ -65,6 +65,12 @@ export const useSessionStore = create<SessionState>()(
         refreshToken,
         // Set store if device is bound to a specific store
         selectedStoreId: deviceInfo.storeId || null,
+        // Create minimal store object from device info if bound
+        selectedStore: deviceInfo.storeId && deviceInfo.storeName ? {
+          id: deviceInfo.storeId,
+          name: deviceInfo.storeName,
+          code: '',  // Not available from device info
+        } : null,
       }),
 
       updateTokens: (accessToken, refreshToken) => set({

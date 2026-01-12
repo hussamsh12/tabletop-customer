@@ -3,9 +3,10 @@ import type { StoreBrief, Store } from '@/types';
 
 /**
  * Fetch all active stores (brief info for store selection)
+ * @param authToken Optional token for immediate use after login
  */
-export async function getActiveStores(): Promise<StoreBrief[]> {
-  return api.get<StoreBrief[]>('/stores/active/brief');
+export async function getActiveStores(authToken?: string): Promise<StoreBrief[]> {
+  return api.get<StoreBrief[]>('/stores/active/brief', { authToken });
 }
 
 /**

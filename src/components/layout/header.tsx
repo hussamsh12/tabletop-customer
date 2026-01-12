@@ -1,21 +1,33 @@
 'use client';
 
-import { ShoppingCart, Store } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, Store, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useSession, useCartItemCount, useIsKioskMode } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
+import { useSessionStore } from '@/stores/session-store';
+import { useCartStore } from '@/stores/cart-store';
 
 interface HeaderProps {
   onCartClick?: () => void;
-  showStoreSelector?: boolean;
 }
 
-export function Header({ onCartClick, showStoreSelector = false }: HeaderProps) {
-  const { tenant, store } = useSession();
+export function Header({ onCartClick }: HeaderProps) {
+  const router = useRouter();
+  const { tenant, store, deviceInfo } = useSession();
   const cartItemCount = useCartItemCount();
   const isKiosk = useIsKioskMode();
   const openCart = useUIStore((state) => state.openCart);
+  const resetSession = useSessionStore((state) => state.reset);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const handleCartClick = () => {
     if (onCartClick) {
@@ -23,6 +35,14 @@ export function Header({ onCartClick, showStoreSelector = false }: HeaderProps) 
     } else {
       openCart();
     }
+  };
+
+  const handleLogout = () => {
+    // Clear all local state
+    clearCart();
+    resetSession();
+    // Redirect to login
+    router.push('/login');
   };
 
   return (
@@ -58,14 +78,27 @@ export function Header({ onCartClick, showStoreSelector = false }: HeaderProps) 
           </div>
         )}
 
-        {/* Right - Cart Button */}
+        {/* Right - Settings dropdown and Cart Button */}
         <div className="flex items-center gap-2">
-          {showStoreSelector && store && (
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Store className="h-4 w-4 mr-2" />
-              Change Store
-            </Button>
-          )}
+          {/* Admin Settings Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Settings</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                {deviceInfo?.deviceName || 'Kiosk'}
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout & Reconfigure
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant="outline"
