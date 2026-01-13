@@ -69,15 +69,24 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        tokenStore.clearTokens();
+        // Only clear tokens on authentication errors (401/403)
+        // For other errors (500, network issues), keep tokens to allow retry
+        if (response.status === 401 || response.status === 403) {
+          console.warn('[ApiClient] Refresh token invalid, clearing session');
+          tokenStore.clearTokens();
+        } else {
+          console.warn('[ApiClient] Refresh failed with status:', response.status);
+        }
         return false;
       }
 
       const data = await response.json();
       tokenStore.setTokens(data.accessToken, data.refreshToken);
+      console.log('[ApiClient] Token refresh successful');
       return true;
-    } catch {
-      tokenStore.clearTokens();
+    } catch (error) {
+      // Network errors should NOT clear tokens - it might be a transient issue
+      console.warn('[ApiClient] Token refresh network error:', error);
       return false;
     }
   }

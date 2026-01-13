@@ -148,10 +148,10 @@ export default function LoginPage() {
       // Tenant fetch is optional for navigation
     }
 
-    // Navigate directly to the store's menu
-    const storeId = store?.id || response.device.storeId;
-    if (storeId) {
-      router.push(`/store/${storeId}/menu`);
+    // Navigate directly to the store's menu using slug
+    const storeSlug = store?.slug || response.device.storeSlug;
+    if (storeSlug) {
+      router.push(`/store/${storeSlug}/menu`);
     } else {
       router.push('/');
     }

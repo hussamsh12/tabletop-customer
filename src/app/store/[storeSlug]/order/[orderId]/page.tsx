@@ -64,7 +64,7 @@ export default function OrderConfirmationPage() {
 
   // Handle new order
   const handleNewOrder = () => {
-    router.push(`/store/${store?.id}/menu`);
+    router.push(`/store/${store?.slug}/menu`);
   };
 
   // Loading state

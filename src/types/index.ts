@@ -31,7 +31,7 @@ export interface TenantSettings {
 export interface Store {
   id: string;
   name: string;
-  code: string;
+  slug: string;
   address?: string;
   phone?: string;
   isActive: boolean;
@@ -46,7 +46,7 @@ export interface StoreSettings {
 export interface StoreBrief {
   id: string;
   name: string;
-  code: string;
+  slug: string;
   address?: string;
 }
 
@@ -233,6 +233,7 @@ export interface DeviceInfo {
   deviceName: string;
   tenantName: string;
   storeName?: string;
+  storeSlug?: string;
 }
 
 export interface DeviceAuthResponse {

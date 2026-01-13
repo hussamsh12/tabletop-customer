@@ -69,16 +69,29 @@ export const useSessionStore = create<SessionState>()(
         selectedStore: deviceInfo.storeId && deviceInfo.storeName ? {
           id: deviceInfo.storeId,
           name: deviceInfo.storeName,
-          code: '',  // Not available from device info
+          slug: deviceInfo.storeSlug || '',
         } : null,
         // Mark as initialized since we just logged in
         isInitialized: true,
       }),
 
-      updateTokens: (accessToken, refreshToken) => set({
-        accessToken,
-        refreshToken,
-      }),
+      updateTokens: (accessToken, refreshToken) => {
+        // Update state
+        set({ accessToken, refreshToken });
+        // Force immediate localStorage persistence to prevent token loss on page refresh
+        // This is a backup in case Zustand's async persist hasn't completed
+        try {
+          const stored = localStorage.getItem('kiosk-session');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.state.accessToken = accessToken;
+            parsed.state.refreshToken = refreshToken;
+            localStorage.setItem('kiosk-session', JSON.stringify(parsed));
+          }
+        } catch (e) {
+          console.warn('[SessionStore] Failed to immediately persist tokens:', e);
+        }
+      },
 
       clearDeviceSession: () => set({
         deviceSessionId: null,
@@ -117,6 +130,7 @@ export const useSessionStore = create<SessionState>()(
         deviceInfo: state.deviceInfo,
         isDeviceAuthenticated: state.isDeviceAuthenticated,
         tenantSlug: state.tenantSlug,
+        tenant: state.tenant, // Persist tenant to avoid re-fetching on every page load
         selectedStoreId: state.selectedStoreId,
         selectedStore: state.selectedStore,
         accessToken: state.accessToken,

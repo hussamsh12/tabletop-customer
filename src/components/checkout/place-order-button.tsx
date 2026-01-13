@@ -31,6 +31,7 @@ export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
   const clearCart = useCartStore((state) => state.clearCart);
 
   const selectedStoreId = useSessionStore((state) => state.selectedStoreId);
+  const selectedStore = useSessionStore((state) => state.selectedStore);
   const displayMode = useUIStore((state) => state.displayMode);
 
   const handlePlaceOrder = async () => {
@@ -69,7 +70,7 @@ export function PlaceOrderButton({ notes, disabled }: PlaceOrderButtonProps) {
       toast.success(t('message.order_placed', 'Order placed successfully!'));
 
       // Navigate to confirmation
-      router.push(`/store/${selectedStoreId}/order/${order.id}`);
+      router.push(`/store/${selectedStore?.slug}/order/${order.id}`);
     } catch (error) {
       console.error('Failed to place order:', error);
       toast.error(t('error.order_failed', 'Failed to place order. Please try again.'));

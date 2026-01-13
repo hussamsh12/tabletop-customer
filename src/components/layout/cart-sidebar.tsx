@@ -155,7 +155,7 @@ export function CartSidebar() {
                   className="w-full touch-target"
                   onClick={() => {
                     closeCart();
-                    router.push(`/store/${store?.id}/checkout`);
+                    router.push(`/store/${store?.slug}/checkout`);
                   }}
                 >
                   {t('button.checkout', 'Checkout')}

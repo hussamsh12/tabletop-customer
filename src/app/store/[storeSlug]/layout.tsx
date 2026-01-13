@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks';
+import { useSessionStore } from '@/stores/session-store';
 import { Header, CartSidebar } from '@/components/layout';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getStoreBySlug } from '@/lib/api';
 
 interface StoreLayoutProps {
   children: React.ReactNode;
@@ -13,14 +15,16 @@ interface StoreLayoutProps {
 export default function StoreLayout({ children }: StoreLayoutProps) {
   const router = useRouter();
   const params = useParams();
-  const storeId = params.storeId as string;
+  const storeSlug = params.storeSlug as string;
+  const [isLoadingStore, setIsLoadingStore] = useState(false);
 
   const { store, isInitialized, isDeviceAuthenticated, deviceInfo } = useSession();
+  const setStore = useSessionStore((state) => state.setStore);
 
-  // Check if this is the correct store for this device
-  const isCorrectStore = deviceInfo?.storeId === storeId || store?.id === storeId;
+  // Check if the current store matches the slug
+  const storeMatchesSlug = store?.slug === storeSlug;
 
-  // Redirect if not authenticated or store doesn't match
+  // Redirect if not authenticated or load store by slug
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -30,25 +34,31 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
       return;
     }
 
-    // Check if device is bound to a different store
-    if (deviceInfo?.storeId && deviceInfo.storeId !== storeId) {
-      router.push(`/store/${deviceInfo.storeId}/menu`);
+    // If store already matches slug, we're good
+    if (storeMatchesSlug) {
       return;
     }
 
-    // If device is bound to this store, we're good (even if store object isn't loaded yet)
-    if (deviceInfo?.storeId === storeId) {
-      return;
-    }
+    // Load store by slug
+    const loadStore = async () => {
+      setIsLoadingStore(true);
+      try {
+        const storeData = await getStoreBySlug(storeSlug);
+        setStore(storeData);
+      } catch (err) {
+        console.error('Failed to load store by slug:', err);
+        // Store not found, redirect to store selection
+        router.push('/');
+      } finally {
+        setIsLoadingStore(false);
+      }
+    };
 
-    // If no store selected or different store, go to store selection
-    if (!store || store.id !== storeId) {
-      router.push('/');
-    }
-  }, [isInitialized, isDeviceAuthenticated, deviceInfo, store, storeId, router]);
+    loadStore();
+  }, [isInitialized, isDeviceAuthenticated, storeSlug, storeMatchesSlug, router, setStore]);
 
-  // Loading state - but allow if device is bound to this store
-  if (!isInitialized || (!store && !isCorrectStore)) {
+  // Loading state
+  if (!isInitialized || isLoadingStore || !storeMatchesSlug) {
     return (
       <div className="min-h-screen flex flex-col">
         {/* Header skeleton */}

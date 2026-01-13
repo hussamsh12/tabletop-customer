@@ -30,8 +30,8 @@ export default function StoreSelectionPage() {
 
   // Redirect to menu if device is already bound to a store
   useEffect(() => {
-    if (isInitialized && isDeviceAuthenticated && deviceInfo?.storeId) {
-      router.push(`/store/${deviceInfo.storeId}/menu`);
+    if (isInitialized && isDeviceAuthenticated && deviceInfo?.storeSlug) {
+      router.push(`/store/${deviceInfo.storeSlug}/menu`);
     }
   }, [isInitialized, isDeviceAuthenticated, deviceInfo, router]);
 
@@ -72,7 +72,7 @@ export default function StoreSelectionPage() {
 
   const handleSelectStore = (storeData: StoreBrief) => {
     setStore(storeData);
-    router.push(`/store/${storeData.id}/menu`);
+    router.push(`/store/${storeData.slug}/menu`);
   };
 
   // Loading state

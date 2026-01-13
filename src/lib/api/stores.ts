@@ -15,3 +15,10 @@ export async function getActiveStores(authToken?: string): Promise<StoreBrief[]>
 export async function getStoreById(storeId: string): Promise<Store> {
   return api.get<Store>(`/stores/${storeId}`);
 }
+
+/**
+ * Fetch store details by slug (derived from store name)
+ */
+export async function getStoreBySlug(slug: string): Promise<Store> {
+  return api.get<Store>(`/stores/slug/${slug}`);
+}

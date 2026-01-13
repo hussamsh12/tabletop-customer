@@ -38,7 +38,7 @@ export default function CheckoutPage() {
             </p>
             <Button
               size={isKiosk ? 'lg' : 'default'}
-              onClick={() => router.push(`/store/${store?.id}/menu`)}
+              onClick={() => router.push(`/store/${store?.slug}/menu`)}
             >
               {t('ui.menu.title', 'Menu')}
             </Button>
