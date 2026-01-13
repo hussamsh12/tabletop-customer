@@ -28,8 +28,12 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
   useEffect(() => {
     if (!isInitialized) return;
 
-    // Must be authenticated
-    if (!isDeviceAuthenticated) {
+    // Check for valid tokens (not just isDeviceAuthenticated flag)
+    const state = useSessionStore.getState();
+    const hasValidTokens = state.accessToken && state.isDeviceAuthenticated;
+
+    // Must be authenticated with valid tokens
+    if (!hasValidTokens) {
       router.push('/login');
       return;
     }
@@ -45,9 +49,17 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
       try {
         const storeData = await getStoreBySlug(storeSlug);
         setStore(storeData);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load store by slug:', err);
-        // Store not found, redirect to store selection
+        // Check if it's an auth error - redirect to login
+        if (err && typeof err === 'object' && 'status' in err) {
+          const status = (err as { status: number }).status;
+          if (status === 401 || status === 403) {
+            router.push('/login');
+            return;
+          }
+        }
+        // Other errors - redirect to store selection
         router.push('/');
       } finally {
         setIsLoadingStore(false);

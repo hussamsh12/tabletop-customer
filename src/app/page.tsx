@@ -30,7 +30,9 @@ export default function StoreSelectionPage() {
 
   // Redirect to menu if device is already bound to a store
   useEffect(() => {
-    if (isInitialized && isDeviceAuthenticated && deviceInfo?.storeSlug) {
+    // Only redirect if we have valid authentication (tokens exist)
+    const state = useSessionStore.getState();
+    if (isInitialized && isDeviceAuthenticated && deviceInfo?.storeSlug && state.accessToken) {
       router.push(`/store/${deviceInfo.storeSlug}/menu`);
     }
   }, [isInitialized, isDeviceAuthenticated, deviceInfo, router]);
@@ -40,6 +42,9 @@ export default function StoreSelectionPage() {
     if (!isInitialized || !isDeviceAuthenticated || hasFetched) return;
     // Skip if device is bound to a store (will redirect above)
     if (deviceInfo?.storeId) return;
+    // Ensure we have valid tokens before making API calls
+    const state = useSessionStore.getState();
+    if (!state.accessToken) return;
 
     const fetchStores = async () => {
       setIsLoadingStores(true);
@@ -58,8 +63,16 @@ export default function StoreSelectionPage() {
         if (data.length === 1) {
           handleSelectStore(data[0]);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to fetch stores:', err);
+        // Check if it's an auth error - redirect to login
+        if (err && typeof err === 'object' && 'status' in err) {
+          const status = (err as { status: number }).status;
+          if (status === 401 || status === 403) {
+            router.push('/login');
+            return;
+          }
+        }
         setError('Failed to load stores. Please try again.');
         setHasFetched(true);
       } finally {
